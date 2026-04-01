@@ -7,3 +7,4 @@ Pillow
 tifffile
 openpyxl
 jinja2>=3.0
+streamlit-image-coordinates

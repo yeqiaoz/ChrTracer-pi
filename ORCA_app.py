@@ -1584,7 +1584,11 @@ elif step == 7:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from PIL import Image as PILImage
-    from streamlit_image_coordinates import streamlit_image_coordinates
+    try:
+        from streamlit_image_coordinates import streamlit_image_coordinates
+        _HAS_IMG_COORDS = True
+    except ImportError:
+        _HAS_IMG_COORDS = False
 
     st.header("Step 7 — Validate Picked Spots")
     st.markdown(
@@ -1651,13 +1655,19 @@ elif step == 7:
         rgb = orca_fit.detect_spots_overlay(maxproj, spots_df, ds=ds)
         pil = PILImage.fromarray(rgb)
 
-        click_radius = st.slider("Click radius (full-res px)", 5, 200, 15, key="click_radius")
-        st.caption(
-            "**Click near an existing spot** to remove it.  "
-            "**Click on empty space** to add a new spot.  "
-            f"(radius = {click_radius} full-res px ≈ {click_radius * 0.108:.0f} µm)"
-        )
-        coords = streamlit_image_coordinates(pil, key=f"validate_fov{fov_view}")
+        if _HAS_IMG_COORDS:
+            click_radius = st.slider("Click radius (full-res px)", 5, 200, 15, key="click_radius")
+            st.caption(
+                "**Click near an existing spot** to remove it.  "
+                "**Click on empty space** to add a new spot.  "
+                f"(radius = {click_radius} full-res px ≈ {click_radius * 0.108:.0f} µm)"
+            )
+            coords = streamlit_image_coordinates(pil, key=f"validate_fov{fov_view}")
+        else:
+            st.image(pil, use_container_width=True)
+            st.caption("Install `streamlit-image-coordinates` (`pip install streamlit-image-coordinates`) "
+                       "to enable click-to-add/remove spots.")
+            coords = None
 
         if coords is not None:
             cx_full = int(coords["x"]) * ds
