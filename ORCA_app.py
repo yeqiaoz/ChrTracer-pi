@@ -598,7 +598,7 @@ if step == 1:
     # --- Load button ---
     col1, col2 = st.columns([1, 4])
     with col1:
-        load_clicked = _exec_button("Load", width="stretch")
+        load_clicked = _exec_button("Load", use_container_width=True)
 
     if load_clicked:
         if folder_path is None or not readout_dirs:
@@ -805,7 +805,7 @@ elif step == 2:
                         text=f"FOV {fov:02d} ({fov_i+1}/{len(fov_select)}) — hyb {hyb}/{n_total}")
 
                     if live_img is not None and fig_path and Path(fig_path).exists():
-                        live_img.image(str(fig_path), width="stretch")
+                        live_img.image(str(fig_path), use_container_width=True)
 
                     df_so_far = pd.DataFrame(rows_so_far)
                     hybs_done = np.arange(1, len(df_so_far) + 1)
@@ -882,7 +882,7 @@ elif step == 2:
                 for i in range(0, len(imgs), cols_per_row):
                     cols = st.columns(cols_per_row)
                     for j, p in enumerate(imgs[i:i + cols_per_row]):
-                        cols[j].image(str(p), caption=p.stem, width="stretch")
+                        cols[j].image(str(p), caption=p.stem, use_container_width=True)
 
         st.divider()
         if _nav_button("Proceed to Validate Drift →"):
@@ -1036,7 +1036,7 @@ elif step == 3:
                         caption = f"Hyb {hyb_num}"
                         if flagged.iloc[hyb_num - 1]:
                             caption += " ⚠ flagged"
-                        row_cols[j].image(str(p), caption=caption, width="stretch")
+                        row_cols[j].image(str(p), caption=caption, use_container_width=True)
 
     # ── Tab 3: Edit shifts ───────────────────────────────────
     with tab_edit:
@@ -1526,7 +1526,7 @@ elif step == 6:
             rgb = orca_fit.detect_spots_overlay(maxproj, spots_df, ds=4)
             live_img.image(PILImage.fromarray(rgb),
                            caption=f"FOV {fov:02d} — {len(spots_df)} spots detected",
-                           width="stretch")
+                           use_container_width=True)
 
             progress_bar.progress((i + 1) / len(fov_select),
                                    text=f"FOV {fov:02d}: {len(spots_df)} spots")
