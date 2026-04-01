@@ -2007,7 +2007,7 @@ elif step == 8:
                 st.session_state.all_fits["_merged"] = merged
 
             n_ok = sum(1 for r in all_rows if r["status"] == "ok")
-            n_fovs_done = len(fits_by_fov)
+            n_fovs_done = sum(1 for k in fits_by_fov if k != "_merged")
 
             if st.session_state.fit_stop_requested:
                 progress_bar.progress(
