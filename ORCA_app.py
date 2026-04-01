@@ -183,6 +183,8 @@ if "olive_keep_hybs" not in st.session_state:
 
 if "step0_done" not in st.session_state:
     st.session_state.step0_done = False
+if "step0_running" not in st.session_state:
+    st.session_state.step0_running = False
 
 # ---------------------------------------------------------------------------
 # Sidebar — step navigator
@@ -343,12 +345,7 @@ if step == 0:
     # ── Parameters ───────────────────────────────────────────
     st.subheader("Parameters")
     c1, c2, c3 = st.columns(3)
-    n_workers = c1.number_input(
-        f"CPU cores (max {os.cpu_count() or 1})",
-        min_value=1, max_value=os.cpu_count() or 1,
-        value=min(8, os.cpu_count() or 1), step=1,
-    )
-    write_tiff = c2.checkbox("Also write multi-page TIFFs", value=False,
+    write_tiff = c1.checkbox("Also write multi-page TIFFs", value=False,
                               help="Writes TIFFs/Location-XX/output_TXXX.tif alongside DAX")
     resume_mode = st.checkbox(
         "Resume — skip readouts whose DAX files already exist",
@@ -393,8 +390,25 @@ if step == 0:
 
     # ── Conversion ───────────────────────────────────────────
     if run_clicked:
+        st.session_state.step0_running = True
+        st.session_state.step0_params  = {
+            "locs_select": locs_select,
+            "raw_path": str(raw_path),
+            "out_path": str(out_path),
+            "resume_mode": resume_mode,
+            "write_tiff": write_tiff,
+        }
+        st.rerun()
+
+    if st.session_state.step0_running:
         import json
-        from concurrent.futures import as_completed
+
+        p = st.session_state.step0_params
+        raw_path  = Path(p["raw_path"])
+        out_path  = Path(p["out_path"])
+        resume_mode = p["resume_mode"]
+        write_tiff  = p["write_tiff"]
+        locs_select = p["locs_select"]
 
         out_path.mkdir(parents=True, exist_ok=True)
         st.session_state.raw_data_dir  = raw_path
@@ -476,32 +490,20 @@ if step == 0:
                 status_text.error(f"{msg} — {err}")
             log_area.code("\n".join(log_lines))
 
-        if n_workers == 1 or len(loc_task_groups) <= 1:
-            # Sequential: one location at a time, progress updates per readout.
+        try:
+            # Sequential: one location at a time (I/O-bound, no benefit from parallelism)
             for loc_tasks in loc_task_groups:
                 for result in orca_drift.convert_one_location(loc_tasks):
                     _update_ui(*result)
-        else:
-            # Parallel: one thread per location (independent dat files).
-            # Each thread does a sequential pass through its own dat files,
-            # so there is no read contention between threads.
-            # UI updates happen on the main thread after each location completes.
-            from concurrent.futures import ThreadPoolExecutor
-            with ThreadPoolExecutor(max_workers=int(n_workers)) as executor:
-                futures = {
-                    executor.submit(orca_drift.convert_one_location, g): g
-                    for g in loc_task_groups
-                }
-                for future in as_completed(futures):
-                    for result in future.result():
-                        _update_ui(*result)
 
-        progress_bar.progress(1.0, text="Done!")
-        status_text.success(
-            f"Conversion complete — {len(selected_dirs)} location(s) × {n_hybs_detected} hybs."
-        )
-        st.session_state.step0_done = True
-        st.session_state.num_locs   = len(selected_dirs)
+            progress_bar.progress(1.0, text="Done!")
+            status_text.success(
+                f"Conversion complete — {len(selected_dirs)} location(s) × {n_hybs_detected} hybs."
+            )
+            st.session_state.step0_done = True
+            st.session_state.num_locs   = len(selected_dirs)
+        finally:
+            st.session_state.step0_running = False
 
     # ── Navigate ─────────────────────────────────────────────
     st.divider()
