@@ -9,14 +9,24 @@ The pipeline processes multi-hyb, multi-FOV 3D image stacks and produces 3D Gaus
 ## Requirements
 
 - Python 3.9+
-- NumPy, SciPy, pandas
+- Dependencies listed in `requirements.txt`
 
 ## Installation
 
 ```bash
 git clone https://github.com/yeqiaoz/ChrTracer3-Python-V4.git
 cd ChrTracer3-Python-V4
+pip install -r requirements.txt
 ```
+
+## Source files
+
+| File | Description |
+|------|-------------|
+| `ORCA_app.py` | Streamlit interactive UI (all pipeline steps) |
+| `orca_drift.py` | Data conversion (Step 0) and drift correction (Step 1) |
+| `orca_fit.py` | Spot detection (Step 2) and 3D Gaussian fitting (Step 3) |
+| `run_pipeline_v4.py` | Headless pipeline orchestration script |
 
 ## Usage
 
@@ -26,11 +36,11 @@ cd ChrTracer3-Python-V4
 streamlit run ORCA_app.py
 ```
 
-The Streamlit interface provides interactive control over all pipeline steps, including Step 0 data conversion.
+The Streamlit interface provides interactive control over all pipeline steps, including Step 0 data conversion. The UI guides you through each step with parameter controls and live visualization.
 
 ### Headless mode (command line)
 
-Edit paths and parameters in `run_pipeline_v4.py`, then run:
+Edit `DAX_DIR`, `OUT_DIR`, and other parameters at the top of `run_pipeline_v4.py`, then run:
 
 ```bash
 python run_pipeline_v4.py

@@ -1,0 +1,9 @@
+streamlit>=1.40
+numpy
+pandas
+scipy
+matplotlib
+Pillow
+tifffile
+openpyxl
+streamlit-image-coordinates
