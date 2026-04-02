@@ -16,6 +16,8 @@ Processes Vutara `.dat` -> ChrTracer3 `.dax` -> fitted 3D spot coordinates -> OL
 - Python 3.10+ (tested on 3.11, 3.12)
 - conda (recommended) or pip
 
+If you don't have conda, install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) first (lightweight, command-line only). Anaconda also works.
+
 ### Option A: conda (recommended)
 
 ```bash
